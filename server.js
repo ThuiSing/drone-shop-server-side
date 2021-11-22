@@ -45,6 +45,7 @@ const run = async () => {
     const dronesCollection = database.collection("Drones");
     const ordersCollection = database.collection("Orders");
     const reviewsCollection = database.collection("Reviews");
+    const cartsCollection = database.collection("cart");
 
     //get users
     app.get("/users", async (req, res) => {
@@ -145,9 +146,14 @@ const run = async () => {
     });
     //sent database ordered item
     app.post("/orders", async (req, res) => {
-      const details = req.body;
-      console.log("clicked");
-      const result = await ordersCollection.insertOne(details);
+      const doc = req.body;
+      const checkMany = Array.isArray(doc);
+      let result;
+      if (checkMany) {
+        result = await ordersCollection.insertMany(doc);
+      } else {
+        result = await ordersCollection.insertOne(doc);
+      }
       res.json(result);
     });
     //update order
@@ -170,6 +176,30 @@ const run = async () => {
       const filter = { _id: ObjectId(id) };
       // console.log(filter);
       const result = await ordersCollection.deleteOne(filter);
+      res.json(result);
+    });
+
+    //cart
+    app.get("/cart/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await cartsCollection.findOne(query);
+      res.send(result);
+    });
+    app.put("/cart", async (req, res) => {
+      const addedCart = req.body;
+      const query = { email: addedCart?.email };
+      const options = { upsert: true };
+      const updateDoc = { $set: addedCart };
+      const result = await cartsCollection.updateOne(query, updateDoc, options);
+      // console.log(result);
+      res.json(result);
+    });
+    app.delete("/cart/:email", async (req, res) => {
+      const email = req.params.email;
+      // console.log(email);
+      const query = { email: email };
+      const result = await cartsCollection.deleteMany(query);
       res.json(result);
     });
 
