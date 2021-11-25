@@ -4,12 +4,14 @@ const admin = require("firebase-admin");
 const cors = require("cors");
 const ObjectId = require("mongodb").ObjectId;
 require("dotenv").config();
+const fileupload = require("express-fileupload");
 const port = process.env.PORT || 5000;
 
 const app = express();
 //middleware
 app.use(cors());
 app.use(express.json());
+app.use(fileupload());
 
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
@@ -114,12 +116,40 @@ const run = async () => {
     });
     app.post("/drones", async (req, res) => {
       const drone = req.body;
-      const result = await dronesCollection.insertOne(drone);
+      const name = drone.name;
+      const description = drone.description;
+      const price = drone.price;
+      const image = req.files.img;
+      const imgBase64 = image.data.toString("base64");
+      const bufferedImg = Buffer.from(imgBase64, "base64");
+
+      const doc = {
+        name,
+        description,
+        price,
+        img: bufferedImg,
+      };
+      const result = await dronesCollection.insertOne(doc);
       res.json(result);
     });
     app.put("/drones/:id", async (req, res) => {
       const id = req.params.id;
-      const doc = req.body;
+
+      const drone = req.body;
+      // console.log(drone);
+      const name = drone.name;
+      const description = drone.description;
+      const price = drone.price;
+      const image = req.files.img;
+      const imgBase64 = image.data.toString("base64");
+      const bufferedImg = Buffer.from(imgBase64, "base64");
+
+      const doc = {
+        name,
+        description,
+        price,
+        img: bufferedImg,
+      };
       const filter = { _id: ObjectId(id) };
       const updatedDoc = { $set: doc };
       const result = await dronesCollection.updateOne(filter, updatedDoc);
