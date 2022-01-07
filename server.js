@@ -27,16 +27,16 @@ const client = new MongoClient(uri, {
 });
 
 // check admin
-// const verifyToken = async (req, res, next) => {
-//   if (req.headers?.authorization?.startsWith("Bearer ")) {
-//     const token = req.headers.authorization.split(" ")[1];
-//     try {
-//       const decodeUser = await admin.auth().verifyIdToken(token);
-//       req.decodedEmail = decodeUser.email;
-//     } catch (err) {}
-//   }
-//   next();
-// };
+const verifyToken = async (req, res, next) => {
+  if (req.headers?.authorization?.startsWith("Bearer ")) {
+    const token = req.headers.authorization.split(" ")[1];
+    try {
+      const decodeUser = await admin.auth().verifyIdToken(token);
+      req.decodedEmail = decodeUser.email;
+    } catch (err) {}
+  }
+  next();
+};
 
 // connect to database
 const run = async () => {
